@@ -1,10 +1,8 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
-import User from './user.js';
-
+import { User } from './user.js';
 
 class Offer extends Model {}
-
 
 Offer.init({
   title: {
@@ -32,9 +30,7 @@ Offer.init({
   },
   photos: {
     type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false,
-
-
+    allowNull: false
   },
   isPremium: {
     type: DataTypes.BOOLEAN,
@@ -69,7 +65,9 @@ Offer.init({
     validate: { min: 100, max: 100000 }
   },
   features: {
-    type: DataTypes.ARRAY(DataTypes.ENUM('Breakfast', 'Air conditioning', 'Laptop friendly workspace', 'Baby seat', 'Washer', 'Towels', 'Fridge')),
+    type: DataTypes.ARRAY(
+      DataTypes.ENUM('Breakfast', 'Air conditioning', 'Laptop friendly workspace', 'Baby seat', 'Washer', 'Towels', 'Fridge')
+    ),
     allowNull: false
   },
   commentsCount: {
@@ -90,9 +88,6 @@ Offer.init({
   tableName: 'offers'
 });
 
-
-// Связь с пользователем
 Offer.belongsTo(User, { as: 'author', foreignKey: 'authorId' });
 
-
-export default Offer;
+export { Offer };

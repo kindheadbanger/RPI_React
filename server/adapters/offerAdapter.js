@@ -9,14 +9,16 @@ const cityCoordinates = {
 
 const getBaseUrl = () => `${process.env.HOST}:${process.env.PORT || 5000}`;
 
-const adaptOfferToClient = (offer) => {
-  const baseUrl = getBaseUrl();
-  const cityLocation = cityCoordinates[offer.city];
-
-  let previewImage = offer.previewImage;
-  if (previewImage && !previewImage.startsWith('http')) {
-    previewImage = `${baseUrl}${previewImage}`;
+const prepareUrl = (url) => {
+  if (!url) {
+    return url;
   }
+
+  return url.startsWith('http') ? url : `${getBaseUrl()}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
+const adaptOfferToClient = (offer) => {
+  const cityLocation = cityCoordinates[offer.city];
 
   return {
     id: String(offer.id),
@@ -28,36 +30,33 @@ const adaptOfferToClient = (offer) => {
     isFavorite: offer.isFavorite,
     isPremium: offer.isPremium,
     rating: parseFloat(offer.rating),
-    previewImage
+    previewImage: prepareUrl(offer.previewImage)
   };
 };
 
-const adaptFullOfferToClient = (offer) => {
-  const baseUrl = getBaseUrl();
-
-  let previewImage = offer.previewImage;
-  if (previewImage && !previewImage.startsWith('http')) {
-    previewImage = `${baseUrl}${previewImage}`;
-  }
-
-  return {
-    id: String(offer.id),
-    title: offer.title,
-    description: offer.description,
-    city: offer.city,
-    previewImage,
-    isPremium: offer.isPremium,
-    isFavorite: offer.isFavorite,
-    rating: parseFloat(offer.rating),
-    type: offer.type,
-    rooms: offer.rooms,
-    guests: offer.guests,
-    price: offer.price,
-    features: offer.features,
-    commentsCount: offer.commentsCount,
-    location: { latitude: offer.latitude, longitude: offer.longitude },
-    author: offer.author
-  };
-};
+const adaptFullOfferToClient = (offer) => ({
+  id: String(offer.id),
+  title: offer.title,
+  description: offer.description,
+  city: offer.city,
+  previewImage: prepareUrl(offer.previewImage),
+  isPremium: offer.isPremium,
+  isFavorite: offer.isFavorite,
+  rating: parseFloat(offer.rating),
+  type: offer.type,
+  rooms: offer.rooms,
+  guests: offer.guests,
+  price: offer.price,
+  features: offer.features,
+  commentsCount: offer.commentsCount,
+  location: { latitude: offer.latitude, longitude: offer.longitude },
+  author: offer.author ? {
+    id: offer.author.id,
+    email: offer.author.email,
+    username: offer.author.username,
+    avatar: prepareUrl(offer.author.avatar),
+    userType: offer.author.userType
+  } : null
+});
 
 export { adaptOfferToClient, adaptFullOfferToClient };

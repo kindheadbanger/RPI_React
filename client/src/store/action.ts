@@ -2,6 +2,7 @@ import { createAction } from '@reduxjs/toolkit';
 import { CityOffer, FullOffer, OffersList } from '../types/offer';
 import { AuthorizationStatusType } from '../types/authorization-status';
 import { Review } from '../types/review';
+import { UserData } from '../types/user-data';
 
 const changeCity = createAction('offers/changeCity', (city: CityOffer) => ({
   payload: city,
@@ -23,6 +24,8 @@ const requireAuthorization = createAction<AuthorizationStatusType>(
   'user/requireAuthorization'
 );
 
+const setUserData = createAction<UserData | null>('user/setUserData');
+
 const setOffersDataLoadingStatus = createAction<boolean>(
   'data/setOffersDataLoadingStatus'
 );
@@ -35,6 +38,7 @@ export {
   currentOffer,
   reviewsList,
   requireAuthorization,
+  setUserData,
   setOffersDataLoadingStatus,
   setError
 };

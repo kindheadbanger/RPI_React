@@ -1,39 +1,14 @@
-import { Logo } from '../../components/logo/logo';
+import { Link } from 'react-router-dom';
+import { AppRoute } from '../../const';
 
-function NotFoundPage(): JSX.Element {
+function PageNotFound(): JSX.Element {
   return (
-    <div className="page page--gray page--main">
-      
-      {/* HEADER С ЛОГО */}
-      <header className="header">
-        <div className="container">
-          <div className="header__wrapper">
-            <div className="header__left">
-              <Logo />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* КОНТЕНТ СТРАНИЦЫ */}
-      <main className="page__main container" style={{ paddingTop: '40px' }}>
-        <h1>404. Страница не найдена</h1>
-        <p>Извините, такой страницы не существует.</p>
-
-        <a
-          href="/"
-          className="button"
-          style={{
-            marginTop: '20px',
-            display: 'inline-block',
-            color: '#4481c3'
-          }}
-        >
-          Вернуться на главную страницу
-        </a>
-      </main>
+    <div style={{padding: '40px', textAlign: 'center'}}>
+      <h1>404. Page not found</h1>
+      <p>The page does not exist.</p>
+      <Link to={AppRoute.Main}>Return to main page</Link>
     </div>
   );
 }
 
-export default NotFoundPage;
+export default PageNotFound;

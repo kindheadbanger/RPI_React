@@ -6,6 +6,7 @@ import {
   currentOffer,
   reviewsList,
   requireAuthorization,
+  setUserData,
   setOffersDataLoadingStatus,
   setError
 } from './action';
@@ -13,6 +14,7 @@ import { AuthorizationStatus, CITIES_LOCATION } from '../const';
 import { CityOffer, FullOffer, OffersList } from '../types/offer';
 import { AuthorizationStatusType } from '../types/authorization-status';
 import { Review } from '../types/review';
+import { UserData } from '../types/user-data';
 
 type InitialState = {
   city: CityOffer;
@@ -20,6 +22,7 @@ type InitialState = {
   offer: FullOffer | null;
   reviews: Review[];
   authorizationStatus: AuthorizationStatusType;
+  user: UserData | null;
   isOffersDataLoading: boolean;
   error: string | null;
 };
@@ -32,6 +35,7 @@ const initialState: InitialState = {
   offer: null,
   reviews: [],
   authorizationStatus: AuthorizationStatus.Unknown,
+  user: null,
   isOffersDataLoading: true,
   error: null,
 };
@@ -52,6 +56,9 @@ const reducer = createReducer(initialState, (builder) => {
     })
     .addCase(requireAuthorization, (state, action) => {
       state.authorizationStatus = action.payload;
+    })
+    .addCase(setUserData, (state, action) => {
+      state.user = action.payload;
     })
     .addCase(setOffersDataLoadingStatus, (state, action) => {
       state.isOffersDataLoading = action.payload;

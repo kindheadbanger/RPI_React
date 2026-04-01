@@ -5,6 +5,7 @@ const getOffers = (state: State) => state.offers;
 const getOffer = (state: State) => state.offer;
 const getReviews = (state: State) => state.reviews;
 const getAuthorizationStatus = (state: State) => state.authorizationStatus;
+const getUser = (state: State) => state.user;
 const getOffersDataLoadingStatus = (state: State) => state.isOffersDataLoading;
 const getError = (state: State) => state.error;
 
@@ -14,6 +15,7 @@ export {
   getOffer,
   getReviews,
   getAuthorizationStatus,
+  getUser,
   getOffersDataLoadingStatus,
   getError
 };

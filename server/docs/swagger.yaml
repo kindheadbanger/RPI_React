@@ -1,0 +1,308 @@
+openapi: 3.0.0
+info:
+  title: Housing Rental API
+  version: 1.0.0
+  description: API для работы с предложениями, отзывами и пользователями
+servers:
+  - url: http://localhost:5000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+  - name: Users
+  - name: Offers
+  - name: Reviews
+paths:
+  /login:
+    post:
+      summary: Авторизация пользователя
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+            example:
+              email: Vicky_Hackett@yahoo.com
+              password: TKSUsSpLSz
+      responses:
+        "200":
+          description: Успешный логин, возвращает токен
+    get:
+      summary: Проверка авторизации пользователя
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Пользователь авторизован
+        "401":
+          description: Пользователь не авторизован
+  /logout:
+    delete:
+      summary: Выход пользователя
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Успешный выход
+        "401":
+          description: Не авторизован
+  /register:
+    post:
+      summary: Регистрация пользователя
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - userType
+                - username
+                - avatar
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                userType:
+                  type: string
+                  enum:
+                    - normal
+                    - pro
+                username:
+                  type: string
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Пользователь успешно зарегистрирован
+        "400":
+          description: Ошибка валидации
+  /offers:
+    get:
+      summary: Получение списка предложений
+      tags:
+        - Offers
+      responses:
+        "200":
+          description: Список предложений успешно получен
+    post:
+      summary: Создание нового предложения
+      description: >
+        Создает новое предложение (offer). Принимает данные в формате
+        multipart/form-data. Поле previewImage обязательно. Поле photos — массив
+        дополнительных файлов.
+      tags:
+        - Offers
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - city
+                - price
+                - rooms
+                - guests
+                - previewImage
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                publishDate:
+                  type: string
+                  format: date
+                city:
+                  type: string
+                isPremium:
+                  type: boolean
+                isFavorite:
+                  type: boolean
+                rating:
+                  type: number
+                type:
+                  type: string
+                rooms:
+                  type: integer
+                guests:
+                  type: integer
+                price:
+                  type: number
+                features:
+                  type: string
+                  description: JSON-строка массива из значений 'Breakfast', 'Air conditioning',
+                    'Laptop friendly workspace', 'Baby seat', 'Washer',
+                    'Towels', 'Fridge'
+                commentsCount:
+                  type: integer
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                userId:
+                  type: integer
+                previewImage:
+                  type: string
+                  format: binary
+                  description: Основное изображение (обязательно)
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Дополнительные изображения
+            examples:
+              generated:
+                summary: Сгенерированный пример (только текстовые поля)
+                value:
+                  title: admoneo clementia volo
+                  description: Distinctio thalassinus verbum minus vox cura abutor. Repudiandae
+                    defluo ciminatio valeo conatus. Caelestis supellex concido
+                    candidus tamen vester.
+                  publishDate: 2026-04-01
+                  city: Amsterdam
+                  isPremium: true
+                  isFavorite: false
+                  rating: 1.9
+                  type: hotel
+                  rooms: 2
+                  guests: 5
+                  price: 291
+                  features: '["Breakfast","Air conditioning","Laptop friendly workspace","Baby
+                    seat","Washer","Towels","Fridge"]'
+                  commentsCount: 18
+                  latitude: -60.5093
+                  longitude: -99.9284
+                  userId: 9
+      responses:
+        "201":
+          description: Предложение успешно создано
+        "400":
+          description: Ошибка валидации данных
+        "401":
+          description: Не авторизован
+  /offers/{id}:
+    get:
+      summary: Получение одного предложения по id
+      tags:
+        - Offers
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Предложение найдено
+        "400":
+          description: Предложение не найдено
+  /offers/favorite:
+    get:
+      summary: Получение списка избранных предложений
+      tags:
+        - Offers
+      responses:
+        "200":
+          description: Список избранных предложений получен
+  /offers/favorite/{offerId}/{status}:
+    post:
+      summary: Изменение статуса избранного у предложения
+      tags:
+        - Offers
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: offerId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+      responses:
+        "200":
+          description: Статус избранного обновлен
+        "400":
+          description: Предложение не найдено
+        "401":
+          description: Не авторизован
+  /reviews/{offerId}:
+    get:
+      summary: Получение отзывов по предложению
+      tags:
+        - Reviews
+      parameters:
+        - in: path
+          name: offerId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Список отзывов получен
+    post:
+      summary: Добавление отзыва к предложению
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: offerId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                rating:
+                  type: integer
+            example:
+              comment: Отличное жилье, всё понравилось!
+              rating: 5
+      responses:
+        "201":
+          description: Отзыв успешно добавлен
+        "400":
+          description: Ошибка валидации или предложение не найдено
+        "401":
+          description: Не авторизован

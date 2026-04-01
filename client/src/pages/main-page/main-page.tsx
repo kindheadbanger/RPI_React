@@ -13,7 +13,8 @@ import { logoutAction } from '../../store/api-actions';
 import {
   getAuthorizationStatus,
   getCity,
-  getOffers
+  getOffers,
+  getUser
 } from '../../store/selectors';
 
 function MainPage(): JSX.Element {
@@ -22,6 +23,7 @@ function MainPage(): JSX.Element {
   const selectedCity = useAppSelector(getCity);
   const allOffers = useAppSelector(getOffers);
   const authorizationStatus = useAppSelector(getAuthorizationStatus);
+  const user = useAppSelector(getUser);
 
   const [activeSort, setActiveSort] = useState<SortOffer>('Popular');
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
@@ -64,8 +66,18 @@ function MainPage(): JSX.Element {
                         to={AppRoute.Favorites}
                         className="header__nav-link header__nav-link--profile"
                       >
-                        <div className="header__avatar-wrapper user__avatar-wrapper"></div>
-                        <span className="header__user-name user__name">User</span>
+                        <div className="header__avatar-wrapper user__avatar-wrapper">
+                          {user?.avatar && (
+                            <img
+                              className="header__avatar user__avatar"
+                              src={user.avatar}
+                              alt={user.email}
+                            />
+                          )}
+                        </div>
+                        <span className="header__user-name user__name">
+                          {user?.email ?? 'User'}
+                        </span>
                         <span className="header__favorite-count">{favoriteOffersCount}</span>
                       </Link>
                     </li>
@@ -106,6 +118,7 @@ function MainPage(): JSX.Element {
             <CitiesList selectedCity={selectedCity} />
           </section>
         </div>
+
         <div className="cities">
           <div className="cities__places-container container">
             <section className="cities__places places">
@@ -120,6 +133,7 @@ function MainPage(): JSX.Element {
                 onMouseLeave={handleCardLeave}
               />
             </section>
+
             <div className="cities__right-section">
               <Map
                 className="cities__map"

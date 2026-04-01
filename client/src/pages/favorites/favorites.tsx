@@ -4,11 +4,12 @@ import { FavoriteCardList } from '../../components/favorite-card-list/favorite-c
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { AppRoute } from '../../const';
 import { logoutAction } from '../../store/api-actions';
-import { getOffers } from '../../store/selectors';
+import { getOffers, getUser } from '../../store/selectors';
 
 function FavoritesPage(): JSX.Element {
   const dispatch = useAppDispatch();
   const offersList = useAppSelector(getOffers);
+  const user = useAppSelector(getUser);
   const favoriteOffers = offersList.filter((offer) => offer.isFavorite);
 
   const handleLogoutClick = () => {
@@ -16,7 +17,7 @@ function FavoritesPage(): JSX.Element {
   };
 
   return (
-    <div className="page page--favorites">
+    <div className="page page--favorites-empty">
       <header className="header">
         <div className="container">
           <div className="header__wrapper">
@@ -30,8 +31,18 @@ function FavoritesPage(): JSX.Element {
                     to={AppRoute.Favorites}
                     className="header__nav-link header__nav-link--profile"
                   >
-                    <div className="header__avatar-wrapper user__avatar-wrapper"></div>
-                    <span className="header__user-name user__name">User</span>
+                    <div className="header__avatar-wrapper user__avatar-wrapper">
+                      {user?.avatar && (
+                        <img
+                          className="header__avatar user__avatar"
+                          src={user.avatar}
+                          alt={user.email}
+                        />
+                      )}
+                    </div>
+                    <span className="header__user-name user__name">
+                      {user?.email ?? 'User'}
+                    </span>
                     <span className="header__favorite-count">{favoriteOffers.length}</span>
                   </Link>
                 </li>
@@ -53,9 +64,9 @@ function FavoritesPage(): JSX.Element {
         </div>
       </header>
 
-      <main className="page__main page__main--favorites">
+      <main className={`page__main page__main--favorites ${favoriteOffers.length === 0 ? 'page__main--favorites-empty' : ''}`}>
         <div className="page__favorites-container container">
-          <section className="favorites">
+          <section className={`favorites ${favoriteOffers.length === 0 ? 'favorites--empty' : ''}`}>
             <h1 className="favorites__title">Saved listing</h1>
 
             {favoriteOffers.length === 0 ? (

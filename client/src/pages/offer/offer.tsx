@@ -8,8 +8,20 @@ import { Map } from '../../components/map/map';
 import { NearbyPlacesList } from '../../components/nearby-places-list/nearby-places-list';
 import { AppRoute, AuthorizationStatus } from '../../const';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { addReviewAction, fetchOfferAction, fetchReviewsAction, logoutAction } from '../../store/api-actions';
-import { getAuthorizationStatus, getOffer, getOffers, getReviews } from '../../store/selectors';
+import {
+  addReviewAction,
+  changeFavoriteStatusAction,
+  fetchOfferAction,
+  fetchReviewsAction,
+  logoutAction
+} from '../../store/api-actions';
+import {
+  getAuthorizationStatus,
+  getOffer,
+  getOffers,
+  getReviews,
+  getUser
+} from '../../store/selectors';
 
 function OfferPage(): JSX.Element {
   const { id } = useParams();
@@ -19,6 +31,7 @@ function OfferPage(): JSX.Element {
   const offers = useAppSelector(getOffers);
   const reviews = useAppSelector(getReviews);
   const authorizationStatus = useAppSelector(getAuthorizationStatus);
+  const user = useAppSelector(getUser);
 
   useEffect(() => {
     if (id) {
@@ -30,6 +43,8 @@ function OfferPage(): JSX.Element {
   if (!offer) {
     return <PageNotFound />;
   }
+
+  const favoriteOffersCount = offers.filter((item) => item.isFavorite).length;
 
   const nearbyOffers = offers
     .filter((item) => item.id !== offer.id && item.city.name === offer.city)
@@ -78,6 +93,17 @@ function OfferPage(): JSX.Element {
     dispatch(logoutAction());
   };
 
+  const handleFavoriteClick = () => {
+    if (!id) {
+      return;
+    }
+
+    dispatch(changeFavoriteStatusAction({
+      offerId: id,
+      status: offer.isFavorite ? 0 : 1,
+    }));
+  };
+
   return (
     <div className="page page--gray page--offer">
       <div className="page">
@@ -89,30 +115,51 @@ function OfferPage(): JSX.Element {
               </div>
               <nav className="header__nav">
                 <ul className="header__nav-list">
-                  <li className="header__nav-item user">
-                    <Link
-                      to={AppRoute.Favorites}
-                      className="header__nav-link header__nav-link--profile"
-                    >
-                      <div className="header__avatar-wrapper user__avatar-wrapper"></div>
-                      <span className="header__user-name user__name">
-                        {offer.author.email}
-                      </span>
-                      <span className="header__favorite-count">{offer.commentsCount}</span>
-                    </Link>
-                  </li>
                   {authorizationStatus === AuthorizationStatus.Auth && (
-                    <li className="header__nav-item">
-                      <a
-                        className="header__nav-link"
-                        href="#"
-                        onClick={(evt) => {
-                          evt.preventDefault();
-                          handleLogoutClick();
-                        }}
+                    <>
+                      <li className="header__nav-item user">
+                        <Link
+                          to={AppRoute.Favorites}
+                          className="header__nav-link header__nav-link--profile"
+                        >
+                          <div className="header__avatar-wrapper user__avatar-wrapper">
+                            {user?.avatar && (
+                              <img
+                                className="header__avatar user__avatar"
+                                src={user.avatar}
+                                alt={user.email}
+                              />
+                            )}
+                          </div>
+                          <span className="header__user-name user__name">
+                            {user?.email ?? 'User'}
+                          </span>
+                          <span className="header__favorite-count">{favoriteOffersCount}</span>
+                        </Link>
+                      </li>
+                      <li className="header__nav-item">
+                        <a
+                          className="header__nav-link"
+                          href="#"
+                          onClick={(evt) => {
+                            evt.preventDefault();
+                            handleLogoutClick();
+                          }}
+                        >
+                          <span className="header__signout">Sign out</span>
+                        </a>
+                      </li>
+                    </>
+                  )}
+                  {authorizationStatus !== AuthorizationStatus.Auth && (
+                    <li className="header__nav-item user">
+                      <Link
+                        to={AppRoute.Login}
+                        className="header__nav-link header__nav-link--profile"
                       >
-                        <span className="header__signout">Sign out</span>
-                      </a>
+                        <div className="header__avatar-wrapper user__avatar-wrapper"></div>
+                        <span className="header__login">Sign in</span>
+                      </Link>
                     </li>
                   )}
                 </ul>
@@ -145,6 +192,25 @@ function OfferPage(): JSX.Element {
               <div className="offer__wrapper">
                 <div className="offer__name-wrapper">
                   <h1 className="offer__name">{offer.title}</h1>
+
+                  {authorizationStatus === AuthorizationStatus.Auth && (
+                    <button
+                      type="button"
+                      onClick={handleFavoriteClick}
+                      style={{
+                        marginTop: '16px',
+                        padding: '10px 16px',
+                        border: '1px solid #4481c3',
+                        background: offer.isFavorite ? '#4481c3' : '#ffffff',
+                        color: offer.isFavorite ? '#ffffff' : '#4481c3',
+                        cursor: 'pointer',
+                        borderRadius: '4px',
+                        fontWeight: 700
+                      }}
+                    >
+                      {offer.isFavorite ? 'Убрать из избранного' : 'В избранное'}
+                    </button>
+                  )}
                 </div>
 
                 <div className="offer__rating rating">
@@ -177,25 +243,25 @@ function OfferPage(): JSX.Element {
 
                 <div className="offer__host">
                   <h2 className="offer__host-title">Meet the host</h2>
-                  <div className="offer__host-user user">
-                    <div className={`offer__avatar-wrapper user__avatar-wrapper ${offer.author.userType === 'pro' ? 'offer__avatar-wrapper--pro' : ''}`}>
-                      <img
-                        className="offer__avatar user__avatar"
-                        src={offer.author.avatar}
-                        width="74"
-                        height="74"
-                        alt={offer.author.username}
-                      />
-                    </div>
-                    <span className="offer__user-name">{offer.author.username}</span>
-                    <span className="offer__user-status">{offer.author.userType}</span>
+                  <div className={`offer__avatar-wrapper user__avatar-wrapper ${offer.author.userType === 'pro' ? 'offer__avatar-wrapper--pro' : ''}`}>
+                    <img
+                      className="offer__avatar user__avatar"
+                      src={offer.author.avatar}
+                      width="74"
+                      height="74"
+                      alt={offer.author.username}
+                    />
                   </div>
+                  <span className="offer__user-name">{offer.author.username}</span>
+                  <span className="offer__user-status">{offer.author.userType}</span>
+
                   <div className="offer__description">
                     <p className="offer__text">{offer.description}</p>
                   </div>
                 </div>
 
                 <ReviewsList reviews={reviews} />
+
                 {authorizationStatus === AuthorizationStatus.Auth && (
                   <ReviewForm onSubmit={handleReviewSubmit} />
                 )}

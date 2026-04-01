@@ -8,6 +8,7 @@ import {
   currentOffer,
   reviewsList,
   requireAuthorization,
+  setUserData,
   setOffersDataLoadingStatus,
   setError
 } from './action';
@@ -82,6 +83,24 @@ const addReviewAction = createAsyncThunk<
   async ({ offerId, comment, rating }, { dispatch, extra: api }) => {
     await api.post(`${APIRoute.Reviews}/${offerId}`, { comment, rating });
     dispatch(fetchReviewsAction(offerId));
+    dispatch(fetchOfferAction(offerId));
+  },
+);
+
+const changeFavoriteStatusAction = createAsyncThunk<
+  void,
+  { offerId: string; status: number },
+  {
+    dispatch: AppDispatch;
+    state: State;
+    extra: AxiosInstance;
+  }
+>(
+  'data/changeFavoriteStatus',
+  async ({ offerId, status }, { dispatch, extra: api }) => {
+    await api.post(`${APIRoute.Offers}/favorite/${offerId}/${status}`);
+    dispatch(fetchOffersAction());
+    dispatch(fetchOfferAction(offerId));
   },
 );
 
@@ -97,10 +116,12 @@ const checkAuthAction = createAsyncThunk<
   'user/checkAuth',
   async (_arg, { dispatch, extra: api }) => {
     try {
-      await api.get(APIRoute.Login);
+      const { data } = await api.get<UserData>(APIRoute.Login);
       dispatch(requireAuthorization(AuthorizationStatus.Auth));
+      dispatch(setUserData(data));
     } catch {
       dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+      dispatch(setUserData(null));
     }
   },
 );
@@ -121,10 +142,12 @@ const loginAction = createAsyncThunk<
       const { data } = await api.post<UserData>(APIRoute.Login, { email, password });
       saveToken(data.token);
       dispatch(requireAuthorization(AuthorizationStatus.Auth));
+      dispatch(setUserData(data));
       return data;
     } catch {
       dropToken();
       dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+      dispatch(setUserData(null));
       return rejectWithValue('Login failed');
     }
   },
@@ -144,6 +167,7 @@ const logoutAction = createAsyncThunk<
     await api.delete(APIRoute.Logout);
     dropToken();
     dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+    dispatch(setUserData(null));
   },
 );
 
@@ -162,6 +186,7 @@ export {
   fetchOfferAction,
   fetchReviewsAction,
   addReviewAction,
+  changeFavoriteStatusAction,
   checkAuthAction,
   loginAction,
   logoutAction,
